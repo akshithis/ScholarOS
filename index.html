@@ -722,7 +722,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
         <div class="welcome-banner">
           <div class="welcome-text">
             <h2 id="welcomeName">Good morning! 👋</h2>
-            <p>You've got 3 deadlines this week. Let's crush them.</p>
+            <p id="welcomeSubtext">Upload a syllabus or add your courses manually to get started.</p>
             <div class="fun-fact">💡 Fun fact: Taking breaks every 25 min boosts focus by 40%!</div>
           </div>
         </div>
@@ -738,23 +738,16 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
           <div>
             <div class="section-label">🚨 Urgent deadlines</div>
             <div class="card">
-              <div class="deadline-item">
-                <div class="dl-dot" style="background:var(--danger);"></div>
-                <div class="dl-info"><div class="dl-name">CS301 — Project report</div><div class="dl-course">Computer Science</div></div>
-                <span class="days-badge days-urgent">Tomorrow!</span>
+                <div id="dashboardDeadlines">
+                  <p style="font-size:13px;color:var(--text2);font-weight:700;line-height:1.5;">
+                    No deadlines yet. Upload a syllabus or add deadlines manually.
+                  </p>
+                </div>
+
+                <button class="btn-ghost" style="width:100%;margin-top:10px;font-size:12px;" onclick="nav('deadlines',document.querySelectorAll('.nav-item')[1])">
+                    Add deadlines →
+                </button>
               </div>
-              <div class="deadline-item">
-                <div class="dl-dot" style="background:var(--accent);"></div>
-                <div class="dl-info"><div class="dl-name">ECON201 — Problem set 4</div><div class="dl-course">Economics</div></div>
-                <span class="days-badge days-soon">3 days</span>
-              </div>
-              <div class="deadline-item">
-                <div class="dl-dot" style="background:var(--green);"></div>
-                <div class="dl-info"><div class="dl-name">ENG110 — Essay draft</div><div class="dl-course">English</div></div>
-                <span class="days-badge days-ok">8 days</span>
-              </div>
-              <button class="btn-ghost" style="width:100%;margin-top:10px;font-size:12px;" onclick="nav('deadlines',document.querySelectorAll('.nav-item')[1])">View full map →</button>
-            </div>
           </div>
           <div>
             <div class="section-label">⚡ Quick study</div>
