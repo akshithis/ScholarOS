@@ -1331,25 +1331,13 @@ function logIntention() {
 }
 
 </script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
-
+<script>
 const firebaseConfig = {
- apiKey: "AIzaSyD9snKUFiG6nowU4p6_uif5au9sgz_Uh88",
+  apiKey: "AIzaSyD9snKUFiG6nowU4p6_uif5au9sgz_Uh88",
   authDomain: "scholaros-28e05.firebaseapp.com",
   projectId: "scholaros-28e05",
   storageBucket: "scholaros-28e05.firebasestorage.app",
@@ -1358,14 +1346,15 @@ const firebaseConfig = {
   measurementId: "G-B3WX9ZYRHK"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+const provider = new firebase.auth.GoogleAuthProvider();
 
 window.loginWithGoogle = async function () {
   try {
-    await signInWithPopup(auth, provider);
+    await auth.signInWithPopup(provider);
   } catch (error) {
     console.error(error);
     alert("Login failed. Check Console.");
@@ -1373,17 +1362,17 @@ window.loginWithGoogle = async function () {
 };
 
 window.logoutUser = async function () {
-  await signOut(auth);
+  await auth.signOut();
 };
 
-onAuthStateChanged(auth, (user) => {
+auth.onAuthStateChanged((user) => {
   const avatar = document.querySelector(".avatar");
+  if (!avatar) return;
 
   if (user) {
     avatar.textContent = user.displayName
       ? user.displayName.split(" ").map(n => n[0]).join("").slice(0, 2)
       : "U";
-
     avatar.title = user.email;
   } else {
     avatar.textContent = "AJ";
@@ -1405,9 +1394,9 @@ window.saveSyllabusToFirebase = async function () {
     return;
   }
 
-  await addDoc(collection(db, "users", user.uid, "syllabi"), {
+  await db.collection("users").doc(user.uid).collection("syllabi").add({
     text: syllabusText,
-    createdAt: serverTimestamp()
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
   alert("✅ Syllabus synced to your account!");
