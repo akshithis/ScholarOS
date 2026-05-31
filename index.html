@@ -611,7 +611,30 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
     <button class="btn-ghost" style="width:100%;margin-bottom:8px;" onclick="loginUser()">Login</button>
     <button class="btn-ghost" style="width:100%;" onclick="loginWithGoogle()">Continue with Google</button>
 
+    <p style="margin-top:12px;font-size:12px;font-weight:700;color:var(--text2);line-height:1.5;">
+      Google accounts must use Continue with Google.<br>
+     Email/password accounts must use Login.
+    </p>
+
     <p id="authMsg" style="margin-top:12px;font-size:12px;font-weight:700;color:var(--danger);"></p>
+  </div>
+</div>
+
+<div id="profileSetup" style="height:100vh;display:none;align-items:center;justify-content:center;background:var(--bg);">
+  <div class="card" style="width:420px;">
+    <h1 style="margin-bottom:8px;">Set up your profile</h1>
+    <p style="margin-bottom:18px;color:var(--text2);font-weight:700;">
+      Customize ScholarOS for your school life.
+    </p>
+
+    <input id="profileName" placeholder="Your name" style="margin-bottom:10px;">
+    <input id="profileSchool" placeholder="School / University" style="margin-bottom:10px;">
+    <input id="profileMajor" placeholder="Major" style="margin-bottom:10px;">
+    <input id="profileSemester" placeholder="Semester, e.g. Spring 2026" style="margin-bottom:12px;">
+
+    <button class="btn-primary" style="width:100%;" onclick="saveProfile()">Save Profile</button>
+
+    <p id="profileMsg" style="margin-top:12px;font-size:12px;font-weight:700;color:var(--danger);"></p>
   </div>
 </div>
 
@@ -1389,6 +1412,7 @@ window.signupUser = async function () {
       username: name,
       email: email,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      profileComplete: false,
       courses: [],
       deadlines: [],
       grades: []
@@ -1428,52 +1452,88 @@ auth.onAuthStateChanged(async (user) => {
   const avatar = document.querySelector(".avatar");
   const appShell = document.getElementById("appShell");
   const authScreen = document.getElementById("authScreen");
+  const profileSetup = document.getElementById("profileSetup");
   const welcomeName = document.getElementById("welcomeName");
 
-  if (user) {
-    authScreen.style.display = "none";
-    appShell.style.display = "flex";
-
-    const displayName = user.displayName || "Student";
-
-    if (avatar) {
-      avatar.textContent = displayName
-        .split(" ")
-        .map(n => n[0])
-        .join("")
-        .slice(0, 2);
-    }
-
-    if (welcomeName) {
-      welcomeName.textContent = "Good morning, " + displayName + "! 👋";
-    }
-  } else {
+  if (!user) {
     authScreen.style.display = "flex";
+    profileSetup.style.display = "none";
     appShell.style.display = "none";
+    return;
   }
+
+  const userDoc = await db.collection("users").doc(user.uid).get();
+
+  if (!userDoc.exists || !userDoc.data().profileComplete) {
+    authScreen.style.display = "none";
+    profileSetup.style.display = "flex";
+    appShell.style.display = "none";
+
+    document.getElementById("profileName").value = user.displayName || "";
+    return;
+  }
+
+  const data = userDoc.data();
+  const displayName = data.username || user.displayName || "Student";
+
+  authScreen.style.display = "none";
+  profileSetup.style.display = "none";
+  appShell.style.display = "flex";
+
+  if (avatar) {
+    avatar.textContent = displayName
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+      .slice(0, 2);
+  }
+
+  if (welcomeName) {
+    welcomeName.textContent = "Good morning, " + displayName + "! 👋";
+  }
+
+  loadUserCourses();
 });
 
-window.saveSyllabusToFirebase = async function () {
+window.saveProfile = async function () {
   const user = auth.currentUser;
-  const syllabusText = document.getElementById("syllabusText").value.trim();
+  if (!user) return;
 
-  if (!user) {
-    alert("Please sign in first.");
+  const name = document.getElementById("profileName").value.trim();
+  const school = document.getElementById("profileSchool").value.trim();
+  const major = document.getElementById("profileMajor").value.trim();
+  const semester = document.getElementById("profileSemester").value.trim();
+
+  if (!name || !school || !major || !semester) {
+    document.getElementById("profileMsg").textContent = "Please fill in all fields.";
     return;
   }
 
-  if (!syllabusText) {
-    alert("Paste your syllabus first.");
-    return;
-  }
-
-  await db.collection("users").doc(user.uid).collection("syllabi").add({
-    text: syllabusText,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  await user.updateProfile({
+    displayName: name
   });
 
-  alert("✅ Syllabus synced to your account!");
+  await db.collection("users").doc(user.uid).set({
+    username: name,
+    email: user.email,
+    school: school,
+    major: major,
+    semester: semester,
+    profileComplete: true,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  location.reload();
 };
+
+window.loadUserCourses = async function () {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const snapshot = await db.collection("users").doc(user.uid).collection("courses").get();
+  console.log("Courses loaded:", snapshot.size);
+};
+
 </script>
 
 </body>
