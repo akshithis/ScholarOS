@@ -598,6 +598,23 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
 </head>
 <body data-theme="sunset">
 
+<div id="authScreen" style="height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);">
+  <div class="card" style="width:380px;">
+    <h1 style="margin-bottom:8px;">🎓 ScholarOS</h1>
+    <p style="margin-bottom:18px;color:var(--text2);font-weight:700;">Login or create your student account</p>
+
+    <input id="authName" placeholder="Username / Display name" style="margin-bottom:10px;">
+    <input id="authEmail" type="email" placeholder="Email" style="margin-bottom:10px;">
+    <input id="authPassword" type="password" placeholder="Password" style="margin-bottom:12px;">
+
+    <button class="btn-primary" style="width:100%;margin-bottom:8px;" onclick="signupUser()">Create Account</button>
+    <button class="btn-ghost" style="width:100%;margin-bottom:8px;" onclick="loginUser()">Login</button>
+    <button class="btn-ghost" style="width:100%;" onclick="loginWithGoogle()">Continue with Google</button>
+
+    <p id="authMsg" style="margin-top:12px;font-size:12px;font-weight:700;color:var(--danger);"></p>
+  </div>
+</div>
+
 <!-- THEME PICKER MODAL -->
 <div class="modal-backdrop" id="themeModal">
   <div class="modal">
@@ -635,7 +652,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
 </div>
 
 <!-- APP SHELL -->
-<div class="app-shell">
+<div class="app-shell" id="appShell" style="display:none;">
 
   <!-- SIDEBAR -->
   <nav class="sidebar">
@@ -681,7 +698,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
       <div class="screen active" id="screen-dashboard">
         <div class="welcome-banner">
           <div class="welcome-text">
-            <h2>Good morning, Alex! 👋</h2>
+            <h2 id="welcomeName">Good morning! 👋</h2>
             <p>You've got 3 deadlines this week. Let's crush them.</p>
             <div class="fun-fact">💡 Fun fact: Taking breaks every 25 min boosts focus by 40%!</div>
           </div>
@@ -1351,6 +1368,49 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const provider = new firebase.auth.GoogleAuthProvider();
 
+window.signupUser = async function () {
+  const name = document.getElementById("authName").value.trim();
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+
+  if (!name || !email || !password) {
+    document.getElementById("authMsg").textContent = "Fill in username, email, and password.";
+    return;
+  }
+
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+
+    await cred.user.updateProfile({
+      displayName: name
+    });
+
+    await db.collection("users").doc(cred.user.uid).set({
+      username: name,
+      email: email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      courses: [],
+      deadlines: [],
+      grades: []
+    });
+
+    location.reload();
+  } catch (error) {
+    document.getElementById("authMsg").textContent = error.message;
+  }
+};
+
+window.loginUser = async function () {
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch (error) {
+    document.getElementById("authMsg").textContent = error.message;
+  }
+};
+
 window.loginWithGoogle = async function () {
   try {
     await auth.signInWithPopup(provider);
@@ -1364,18 +1424,32 @@ window.logoutUser = async function () {
   await auth.signOut();
 };
 
-auth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged(async (user) => {
   const avatar = document.querySelector(".avatar");
-  if (!avatar) return;
+  const appShell = document.getElementById("appShell");
+  const authScreen = document.getElementById("authScreen");
+  const welcomeName = document.getElementById("welcomeName");
 
   if (user) {
-    avatar.textContent = user.displayName
-      ? user.displayName.split(" ").map(n => n[0]).join("").slice(0, 2)
-      : "U";
-    avatar.title = user.email;
+    authScreen.style.display = "none";
+    appShell.style.display = "flex";
+
+    const displayName = user.displayName || "Student";
+
+    if (avatar) {
+      avatar.textContent = displayName
+        .split(" ")
+        .map(n => n[0])
+        .join("")
+        .slice(0, 2);
+    }
+
+    if (welcomeName) {
+      welcomeName.textContent = "Good morning, " + displayName + "! 👋";
+    }
   } else {
-    avatar.textContent = "AJ";
-    avatar.title = "";
+    authScreen.style.display = "flex";
+    appShell.style.display = "none";
   }
 });
 
