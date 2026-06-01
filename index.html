@@ -728,10 +728,27 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
         </div>
 
         <div class="grid-4" style="margin-bottom:22px;">
-          <div class="stat-card"><div class="stat-num" style="color:var(--danger);">3</div><div class="stat-lbl">Due this week</div></div>
-          <div class="stat-card"><div class="stat-num" style="color:var(--primary);">87%</div><div class="stat-lbl">Avg grade</div></div>
-          <div class="stat-card"><div class="stat-num" style="color:var(--green);">12</div><div class="stat-lbl">Cards studied</div></div>
-          <div class="stat-card"><div class="stat-num" style="color:var(--accent-text);">4h 20m</div><div class="stat-lbl">Focus this week</div></div>
+
+          <div class="stat-card">
+            <div class="stat-num" id="dueThisWeek" style="color:var(--danger);">0</div>
+            <div class="stat-lbl">Due this week</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-num" id="avgGrade" style="color:var(--primary);">--</div>
+            <div class="stat-lbl">Avg grade</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-num" id="cardsStudied" style="color:var(--green);">0</div>
+          <div class="stat-lbl">Cards studied</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-num" id="focusTime" style="color:var(--accent-text);">0m</div>
+            <div class="stat-lbl">Focus this week</div>
+          </div>
+
         </div>
 
         <div class="grid-2">
@@ -1459,6 +1476,7 @@ auth.onAuthStateChanged(async (user) => {
   }
 
   loadUserCourses();
+  updateDashboardStats();
 });
 
 window.saveProfile = async function () {
@@ -1499,6 +1517,29 @@ window.loadUserCourses = async function () {
   const snapshot = await db.collection("users").doc(user.uid).collection("courses").get();
   console.log("Courses loaded:", snapshot.size);
 };
+
+async function updateDashboardStats() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const userDoc = await db.collection("users").doc(user.uid).get();
+
+  if (!userDoc.exists) return;
+
+  const data = userDoc.data();
+
+  document.getElementById("dueThisWeek").textContent =
+    (data.deadlines || []).length;
+
+  document.getElementById("avgGrade").textContent =
+    data.avgGrade ? data.avgGrade + "%" : "--";
+
+  document.getElementById("cardsStudied").textContent =
+    data.cardsStudied || 0;
+
+  document.getElementById("focusTime").textContent =
+    data.focusTime || "0m";
+}
 
 </script>
 
