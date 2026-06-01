@@ -789,45 +789,21 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
           <div>
             <div class="section-label">All upcoming deadlines</div>
             <div class="card">
-              <div class="deadline-item">
-                <div class="dl-dot" style="background:var(--primary);"></div>
-                <div class="dl-info"><div class="dl-name">CS301 — Project report</div><div class="dl-course">Computer Science</div></div>
-                <div class="dl-date">May 31</div>
-                <span class="days-badge days-urgent" style="margin-left:8px;">1 day</span>
-              </div>
-              <div class="deadline-item">
-                <div class="dl-dot" style="background:var(--green);"></div>
-                <div class="dl-info"><div class="dl-name">ECON201 — Problem set 4</div><div class="dl-course">Economics</div></div>
-                <div class="dl-date">Jun 2</div>
-                <span class="days-badge days-soon" style="margin-left:8px;">3 days</span>
-              </div>
-              <div class="deadline-item">
-                <div class="dl-dot" style="background:var(--accent);"></div>
-                <div class="dl-info"><div class="dl-name">ENG110 — Essay draft</div><div class="dl-course">English</div></div>
-                <div class="dl-date">Jun 7</div>
-                <span class="days-badge days-ok" style="margin-left:8px;">8 days</span>
-              </div>
-              <div class="deadline-item">
-                <div class="dl-dot" style="background:var(--primary);"></div>
-                <div class="dl-info"><div class="dl-name">CS301 — Final exam</div><div class="dl-course">Computer Science</div></div>
-                <div class="dl-date">Jun 15</div>
-                <span class="days-badge days-ok" style="margin-left:8px;">16 days</span>
-              </div>
-              <div class="deadline-item">
-                <div class="dl-dot" style="background:var(--green);"></div>
-                <div class="dl-info"><div class="dl-name">ECON201 — Midterm</div><div class="dl-course">Economics</div></div>
-                <div class="dl-date">Jun 20</div>
-                <span class="days-badge days-ok" style="margin-left:8px;">21 days</span>
-              </div>
+             <div id="deadlineMapList">
+              <p style="font-size:13px;color:var(--text2);font-weight:700;line-height:1.5;">
+                No deadlines yet. Paste a syllabus or add your first deadline manually.
+              </p>
+            </div>
             </div>
           </div>
           <div>
             <div class="section-label">📋 Paste your syllabus</div>
             <div class="card">
               <p style="font-size:13px;color:var(--text2);font-weight:600;line-height:1.5;margin-bottom:12px;">Drop your full course syllabus below. ScholarOS will scan it and auto-add every deadline to your map. 🔍</p>
-              <textarea id="syllabusText" rows="6" placeholder="COURSE: CS301 Computer Science&#10;&#10;Week 3 - Project proposal due: March 15&#10;Week 7 - Midterm exam: April 12&#10;Week 12 - Final project due: May 31&#10;Week 14 - Final exam: June 15"></textarea>
+             <textarea id="syllabusText" rows="6" placeholder="Paste your syllabus here..."></textarea>
              <button class="btn-primary" style="width:100%;margin-top:10px;" onclick="parseSyllabus(); saveSyllabusToFirebase();">Extract + Sync deadlines ✨</button>
-              <div id="parseResult" style="margin-top:10px;font-size:12px;color:var(--green-text);font-weight:700;display:none;">✅ Found 4 deadlines! They've been added to your map.</div>
+            <div id="parseResult"
+                style="margin-top:10px;font-size:12px;font-weight:700;color:var(--green-text);display:none;">
             </div>
             <div class="section-label" style="margin-top:14px;">➕ Add manually</div>
             <div class="card">
@@ -835,12 +811,9 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
                 <input type="text" id="newTaskName" placeholder="Assignment name..." />
                 <input type="date" id="newTaskDate" />
               </div>
-              <select id="newTaskCourse" style="margin-bottom:8px;">
-                <option value="">Select course...</option>
-                <option>CS301 — Computer Science</option>
-                <option>ECON201 — Economics</option>
-                <option>ENG110 — English</option>
-              </select>
+             <select id="newTaskCourse" style="margin-bottom:8px;">
+              <option value="">Select course...</option>
+             </select>
               <button class="btn-primary" style="width:100%;font-size:12px;" onclick="addDeadline()">Add deadline</button>
             </div>
           </div>
